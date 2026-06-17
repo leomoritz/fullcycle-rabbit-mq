@@ -226,6 +226,25 @@ npx nodemon src/05-pub-sub/producer.ts
 ![alt text](image-15.png)
 ![alt text](image-14.png)
 
+## Padrão Request Reply (Requisição e Resposta)
+- Este padrão implementa comunicação assíncrona e padrão RPC (Remote Procedure Call), onde os produtores enviam mensagens de requisição para uma fila e os consumidores processam essas mensagens e enviam mensagens de resposta de volta para os produtores.
+- O RabbitMQ suporta este padrão através da configuração de filas e do uso de propriedades de mensagens, como `reply_to` (fila de resposta) e `correlation_id` (identificador de correlação para rastrear a resposta).
+- O padrão request reply é útil para cenários onde um produtor precisa obter uma resposta de um consumidor após enviar uma mensagem de requisição, permitindo comunicação bidirecional entre sistemas.
+- Permite que os produtores aguardem por respostas de forma assíncrona, sem bloquear a execução do sistema.
+- Embora o padrão request reply seja tradicionalmente associado a comunicação síncrona, ele pode ser implementado de forma assíncrona utilizando o RabbitMQ, onde os produtores enviam mensagens de requisição e continuam com outras tarefas, enquanto os consumidores processam as mensagens e enviam as respostas de volta para os produtores quando estiverem prontas. Dessa forma, o sistema pode ser mais eficiente e escalável, permitindo que os produtores e consumidores operem de forma independente e assíncrona.
+- Exemplo de outros protocolos que implementam o padrão request reply:
+  - http: url + verbo
+  - soap: xml-rpc + chamada
+- Motivos de usar RabbitMQ com Request Reply para simular comunicação síncrona:
+  - Interdependência (desacoplamento): Permite que os produtores e consumidores sejam independentes, facilitando a manutenção e evolução do sistema.
+  - Escalabilidade: Permite que múltiplos consumidores processem requisições de forma concorrente, aumentando a capacidade de processamento do sistema.
+  - Resiliência: Permite que as mensagens de requisição sejam reentregues a outros consumidores em caso de falhas, garantindo que as requisições sejam processadas mesmo em cenários de alta carga ou falhas temporárias.
+
+![alt text](image-16.png)
+
+*IMPORTANTE*
+- Implementar esse padrão no RabbitMQ exige muito cuidado, principalmente no tratamento de resiliência, pois ser muito tolerante ou pouco tolerante a falhas pode impactar negativamente a aplicação.
+- Devido ao motivo acima, é sempre necessário avaliar os prós/contras de implementar esse padrão no RabbitMQ, pois exige um esforço maior para implementar as tratativas de resiliência, por exemplo, como evitar acumulo/represália de mensagens caso o `client` tenha problemas no processamento durante o consumo das respostas publicadas pelo `server`? Esse entre outros questionamentos precisam ser considerados na hora de implementar esse padrão.
 
 ## Modelo de comunicação do protocolo AMQP
 - O modelo de comunicação do AMQP é baseado em mensagens, onde os produtores enviam mensagens para exchanges, que as roteiam para filas, e os consumidores as processam.
