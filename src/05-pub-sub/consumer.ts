@@ -21,7 +21,7 @@ async function consumer() {
                     console.log("[x] Received object %s with id: %d, name: %s, price: %s", msg.properties.contentType, obj.id, obj.name, obj.price);
                 }
             },
-            { noAck: false } // sem confirmação, o rabbit considerá que a mensagem foi processada assim que for entregue ao consumidor. Isso é útil para casos onde a perda de mensagens não é crítica, mas pode levar a mensagens perdidas se o consumidor falhar antes de processar a mensagem.
+            { noAck: false } // com confirmação
         );
     } catch (error) {
         console.error('Error in consumer:', error);

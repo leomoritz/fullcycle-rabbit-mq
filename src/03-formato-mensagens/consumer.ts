@@ -23,7 +23,7 @@ async function consumer() {
                     console.log(`JSON ${JSON.stringify(obj)} is being processed...`);
                 }
             },
-            { noAck: true }
+            { noAck: true } // sem confirmação, o rabbit considerá que a mensagem foi processada assim que for entregue ao consumidor. Isso é útil para casos onde a perda de mensagens não é crítica, mas pode levar a mensagens perdidas se o consumidor falhar antes de processar a mensagem.
         );
     } catch (error) {
         console.error('Error in consumer:', error);

@@ -211,6 +211,22 @@ npx nodemon src/05-pub-sub/producer.ts
 ![alt text](image-12.png)
 ![alt text](image-13.png)
 
+## Padrão Work Queue (Fila de Trabalho)
+- Este padrão implementa comunicação assíncrona e padrão queue, onde os produtores enviam mensagens para uma fila e os consumidores as processam de forma concorrente.
+- O RabbitMQ suporta este padrão através da configuração de filas e do uso de acknowledgements para garantir que as mensagens sejam processadas corretamente pelos consumidores.
+- Balanceamento de carga assíncrono: O padrão work queue é útil para distribuir tarefas pesadas entre múltiplos consumidores, permitindo que o sistema seja escalável e eficiente.
+- Prefetch: O RabbitMQ permite um throughput alto a partir de `prefetch` para os workers trabalharem com lotes (batches) de mensagens, contudo, isso implica em riscos de lentidão/gargalos.
+- Permite resiliência, pois se um consumidor falhar, a mensagem pode ser reentregue a outro consumidor.
+- Diferente do padrão pub/sub, onde todos os consumidores recebem a mesma mensagem, no padrão work queue cada mensagem é processada por apenas um consumidor.
+- Embora pareça estranho, é possível implementar o padrão `work queue` em conjunto com `pub/sub`. Por exemplo:
+  - Um produtor envia mensagens para uma exchange do tipo fanout, que distribui as mensagens para múltiplas filas.
+  - Cada fila tem múltiplos consumidores, que processam as mensagens de forma concorrente.
+  - Dessa forma, cada mensagem é processada por apenas um consumidor, mas múltiplos consumidores podem processar mensagens diferentes da mesma fila, permitindo escalabilidade e eficiência no processamento de tarefas.
+- Na prática não muda muita coisa, para aplicar o conceito tradicional de work queue, basta configurar as filas para receber mensagens de uma exchange do tipo direct, onde cada mensagem é roteada para uma fila específica com base na chave de roteamento (ROUTING KEY). Dessa forma, cada mensagem será processada por apenas um consumidor, mas múltiplos consumidores podem processar mensagens diferentes da mesma fila, permitindo escalabilidade e eficiência no processamento de tarefas. Segue print abaixo onde demonstra que havia uma fila chamada `work_queue` e 2 consumidores conectados para consumir lotes de 10 mensagens, ou seja, cada consumidor processava 10 mensagens por vez, totalizando 20 mensagens processadas simultaneamente:
+![alt text](image-15.png)
+![alt text](image-14.png)
+
+
 ## Modelo de comunicação do protocolo AMQP
 - O modelo de comunicação do AMQP é baseado em mensagens, onde os produtores enviam mensagens para exchanges, que as roteiam para filas, e os consumidores as processam.
 - O protocolo define um conjunto de operações para publicar, consumir e gerenciar mensagens, filas e exchanges, permitindo uma comunicação eficiente e confiável entre sistemas distribuídos.
