@@ -145,6 +145,11 @@ channel.assertQueue('my_queue', { // assertQueue é idempotente, ou seja, se a f
   - Acknowledgements: Os consumidores podem enviar confirmações (acknowledgements) para o broker para indicar que uma mensagem foi processada com sucesso, ou rejeitá-la se ocorreu um erro.
   - Concorrência: Vários consumidores podem se conectar à mesma fila, permitindo o processamento paralelo de mensagens e aumentando a capacidade de processamento do sistema.
   - Configurações: Os consumidores podem ser configurados com diferentes opções, como pré-busca (prefetch) para controlar o número de mensagens que um consumidor pode processar simultaneamente, e exclusividade (exclusive) para garantir que apenas um consumidor possa acessar uma fila específica.
+- Confirmação no RabbitMQ
+  - Pode ser manual (configurado pelo programador) ou automática (sinal enviado pela biblioteca utilizada).
+  - `noAck: true` significa que o consumo será sem confirmação. O rabbit considerará que a mensagem foi processada assim que for entregue ao consumidor. Isso é útil para casos onde a perda de mensagens não é crítica, mas pode levar a mensagens perdidas se o consumidor falhar antes de processar a mensagem.
+  - `noAck: false` significa que o consumo será com confirmação. O consumidor deve enviar uma confirmação (ack) para o broker após processar a mensagem. Se o consumidor falhar antes de enviar a confirmação, a mensagem será reentregue a outro consumidor.
+  ![alt text](image-9.png)
 - Sinal de vida: O heartbeat (pulsação) no RabbitMQ é um mecanismo de verificação de saúde usado para monitorar a conexão de rede entre a sua aplicação (produtor/consumidor) e o servidor RabbitMQ. Ele garante que conexões inativas ou interrompidas abruptamente sejam fechadas rapidamente. Quando uma aplicação se conecta ao RabbitMQ, elas negociam um tempo limite (timeout) — que é o tempo máximo que podem ficar sem trocar dados.Se nenhuma mensagem for enviada ou recebida durante esse período, o cliente e o servidor enviam pacotes pequenos de dados (os heartbeats) um para o outro.
   - Se o heartbeat for respondido: A conexão está ativa e saudável.
   - Se o heartbeat falhar: O RabbitMQ ou a biblioteca cliente entende que a outra ponta caiu (cabo de rede desconectado, travamento, etc.) e descarta a conexão, limpando os recursos.
