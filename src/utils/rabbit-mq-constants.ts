@@ -1,0 +1,4 @@
+// Constantes do RabbitMQ
+export const RABBITMQ_URL = 'amqp://admin:admin@localhost:5672';
+export const FANNOUT_EXCHANGE_NAME = 'amq.fanout';
+export const FANNOUT_EXCHANGE_TYPE = 'fanout';
