@@ -80,6 +80,7 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
 
 ### Queues
 - Fila é uma estrutura de dados que armazena mensagens até que sejam processadas por um consumidor.
+- O RabbitMQ utiliza padrão de filas de forma assíncrona e com o conceito FIFO (First In, First Out), ou seja, o primeiro que entra é o primeiro que sai.
 - As filas são criadas dentro de um virtual host. Quando nenhum virtual host é especificado, a fila é criada no virtual host padrão ("/").
 - As filas podem ser configuradas com diferentes propriedades, como durabilidade, exclusividade e auto-delete.
   - Durable: Se definida como verdadeira, a fila persistirá mesmo após o broker ser reiniciado.
@@ -162,6 +163,53 @@ channel.assertQueue('my_queue', { // assertQueue é idempotente, ou seja, se a f
     - Se você definir um tempo muito alto, o sistema demorará para perceber se um consumidor travou.
 
 ![alt text](image-8.png)
+
+## Padrão Pub/Sub
+- O padrão garante que todos que se inscreveram vão receber a mensagem.
+- O RabbitMQ permite o uso deste padrão através da configuração das filas com o recurso de binding (roteamento).
+- Não há como trabalhar com este padrão sem que a comunicação seja assíncrona.
+- Embora o exemplo abaixo utilize filas, é possível implementar o padrão pub/sub sem ter filas.
+
+Vamos demonstrar esse padrão na prática com RabbitMQ: 
+
+1. Primeiramente vamos configurar pelo menos duas filas para usar o mesmo tipo de exchange (fanout), que garante que todas as filas recebam uma cópia da mensagem:
+![alt text](image-10.png)
+![alt text](image-11.png)
+
+2. Em seguida, no meu código fonte, preciso fazer o seguinte (código abaixo considera a utilização da lib node `amqplib`):
+```typescript
+// Conecta no RabbitMQ e cria o canal para conexão
+const connection = await amqp.connect('amqp://admin:admin@localhost:5672');
+const channel = await connection.createChannel();
+
+// Criar as filas caso ainda não existam (boa prática para garantir entrega)
+await channel.assertQueue("hello");
+await channel.assertQueue("products");
+
+// Construção da mensagem
+const messages = new Array(10000).fill(0).map((_, i) => (
+    {
+      id: i,
+      name: `Product ${i}`,
+      price: Math.floor(Math.random() * 100),
+    }
+));
+
+// publicação da mensagem na exchange e não mais diretamente na fila
+await Promise.all(
+    messages.map((message) => {
+        return channel.publish("amq.fanout", "", Buffer.from(JSON.stringify(message)), { // exchange, router key, message
+          contentType: "application/json",
+        });
+    })
+);
+```
+3. Executar o código e validar se ambas filas receberam a mensagem pelo fato de estarem utilizando binding exchange amq.fanout
+```shell
+npx nodemon src/05-pub-sub/producer.ts
+```
+![alt text](image-12.png)
+![alt text](image-13.png)
 
 ## Modelo de comunicação do protocolo AMQP
 - O modelo de comunicação do AMQP é baseado em mensagens, onde os produtores enviam mensagens para exchanges, que as roteiam para filas, e os consumidores as processam.
