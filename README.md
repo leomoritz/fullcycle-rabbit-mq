@@ -26,6 +26,16 @@ Repositório de estudo do módulo Rabbit MQ da FullCycle
 
 ![alt text](image.png)
 
+## Como o RabbitMQ implementa o AMQP?
+- Canais: Conexões virtuais TCP que abrigam múltiplos canais virtuais para operações concorrentes.
+- Mensagens: Compostas por cabeçalhos (propriedades) e corpo (payload) com metadados.
+  - Controle de entrega: delivery_mode (persistência), expiration (TTL)
+  - Conteúdo: content_type, headers personalizados.
+  - Padrões RPC: reply_to (fila de resposta), correlation_id (rastreamento).
+- Exchanges: Pontos de entrada e armazenamento de mensagens no sistema.
+- Binginds: Regras que determinam o fluxo das mensagens entre exchanges e filas.
+
+
 ## RabbitMQ vs. Outros Message Brokers
 
 ![alt text](image-2.png)
@@ -108,8 +118,18 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
   - Argumentos: Podem incluir parâmetros adicionais para personalizar o comportamento do roteamento.
 
 ## Dinâmica do fluxo de mensagens
+- O produtor publica uma mensagem em uma exchange, especificando uma chave de roteamento (ROUTING KEY).
+- A exchange recebe a mensagem e, com base em suas regras de roteamento (bindings), encaminha a mensagem para as filas associadas.
+- Os consumidores conectados às filas recebem as mensagens e as processam de forma assíncrona, podendo confirmar o recebimento ou rejeitar a mensagem conforme necessário.
+- O RabbitMQ garante a entrega das mensagens, mesmo em caso de falhas, utilizando mecanismos de persistência e confirmações.
+
+![alt text](image-5.png)
+![alt text](image-6.png)
 
 ## Modelo de comunicação do protocolo AMQP
+- O modelo de comunicação do AMQP é baseado em mensagens, onde os produtores enviam mensagens para exchanges, que as roteiam para filas, e os consumidores as processam.
+- O protocolo define um conjunto de operações para publicar, consumir e gerenciar mensagens, filas e exchanges, permitindo uma comunicação eficiente e confiável entre sistemas distribuídos.
+- O AMQP suporta transações, permitindo que os produtores e consumidores realizem operações atômicas para garantir a integridade dos dados e a consistência do sistema.
 
 ## Simulador de Comportamento de Filas com Rabbit MQ
 
@@ -146,6 +166,13 @@ https://tryrabbitmq.com/
 - Clustering: Agrupamento de múltiplos nodes para distribuir a carga de trabalho.
 - Federation: Conexão entre diferentes brokers RabbitMQ para compartilhar mensagens.
 - Shovel: Ferramenta para mover mensagens entre diferentes brokers RabbitMQ.
+
+## Formato da mensagem
+- O RabbitMQ é agnóstico em relação ao formato da mensagem, ou seja, ele não impõe um formato específico para as mensagens que são enviadas e recebidas.
+- O formato da mensagem é definido pelo produtor e consumidor, e pode ser qualquer tipo de dado que possa ser representado como um buffer de bytes, como JSON, XML, texto simples, binário, etc.
+- O RabbitMQ trata as mensagens como um fluxo de bytes, e é responsabilidade do produtor e consumidor interpretar corretamente o formato da mensagem para garantir a comunicação eficaz entre eles.
+
+`Em resumo, o RabbitMQ armazena a mensagem em binário (buffer de bytes) e por este motivo traz flexibilidade de uso.`
 
 ## Prática
 
@@ -208,4 +235,42 @@ npm run build`
 ```
 npm start
 
+```
+
+### Implementando uma conexão simples producer e consumer com RabbitMQ usando Node.js e TypeScript
+```
+import amqp from 'amqplib';
+
+async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function main() {
+    // Conectar ao RabbitMQ
+    const connection = await amqp.connect('amqp://localhost');
+    console.log('Connected to RabbitMQ');
+
+    // Criar um canal
+    const channel = await connection.createChannel();
+    console.log('Channel created');
+
+    // Declarar uma fila
+    const queue = 'hello';
+    await channel.assertQueue(queue, { durable: false });
+    console.log(`Queue "${queue}" declared`);
+
+    // Enviar uma mensagem para a fila
+    const message = 'Hello, RabbitMQ!';
+    channel.sendToQueue(queue, Buffer.from(message));
+    console.log(`Message sent: ${message}`);
+
+    // Consumir mensagens da fila
+    channel.consume(queue, (msg) => {
+        if (msg) {
+            console.log(`Message received: ${msg.content.toString()}`);
+            channel.ack(msg); // Confirmar que a mensagem foi processada
+        }
+    });
+    console.log('Waiting for messages...');
+}
 ```

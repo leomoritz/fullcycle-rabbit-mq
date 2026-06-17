@@ -8,17 +8,13 @@ async function producer() {
         const channel = await connection.createChannel();
         console.log('Channel created successfully');
 
-        const queue = "hello";
-        const msg = "Hello World!";
+        const queue = "products";
+        const msg = JSON.stringify({ id: 1, name: "Teclado Logitech", price: 80.0 }); // Criar um objeto e convertê-lo para uma string JSON
 
         await channel.assertQueue(queue); // Garantir que a fila existe, criando-a se necessário
-
-        /* 
-        Buffer.from(msg) é necessário porque o RabbitMQ trabalha com buffers para as mensagens. 
-        Ele converte a string em um buffer de bytes antes de enviar para a fila. 
-        Ex: Buffer.from("Hello World!") = <Buffer 48 65 6c 6c 6f 20 57 6f 72 6c 64 21>
-        */
-        channel.sendToQueue(queue, Buffer.from(msg));
+        channel.sendToQueue(queue, Buffer.from(msg), {
+            contentType: "application/json" // Definir o tipo de conteúdo da mensagem como JSON
+        });
         console.log(" [x] Sent '%s'", msg);
 
         setTimeout(() => {

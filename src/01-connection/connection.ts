@@ -12,7 +12,7 @@ async function connect() {
 
         await sleep(30000); // Aguardar 30 segundos para demonstração
 
-        // Fechar conexão após o uso
+        // Fechar conexão após o uso para não termos vazamento de memória (memory leak)
         await channel.close();
         await connection.close();
         console.log('Connection closed');
