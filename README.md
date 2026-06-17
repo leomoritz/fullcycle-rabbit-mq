@@ -137,6 +137,27 @@ channel.assertQueue('my_queue', { // assertQueue é idempotente, ou seja, se a f
 ![alt text](image-5.png)
 ![alt text](image-6.png)
 
+## Consumers
+- Os consumidores são as aplicações ou serviços que se conectam às filas do RabbitMQ para receber e processar mensagens.
+- Características dos consumidores:
+  - Conexão: Os consumidores estabelecem uma conexão com o broker RabbitMQ e se inscrevem em uma ou mais filas para receber mensagens.
+  - Processamento assíncrono: Os consumidores processam as mensagens de forma assíncrona, permitindo que o sistema seja escalável e responsivo.
+  - Acknowledgements: Os consumidores podem enviar confirmações (acknowledgements) para o broker para indicar que uma mensagem foi processada com sucesso, ou rejeitá-la se ocorreu um erro.
+  - Concorrência: Vários consumidores podem se conectar à mesma fila, permitindo o processamento paralelo de mensagens e aumentando a capacidade de processamento do sistema.
+  - Configurações: Os consumidores podem ser configurados com diferentes opções, como pré-busca (prefetch) para controlar o número de mensagens que um consumidor pode processar simultaneamente, e exclusividade (exclusive) para garantir que apenas um consumidor possa acessar uma fila específica.
+- Sinal de vida: O heartbeat (pulsação) no RabbitMQ é um mecanismo de verificação de saúde usado para monitorar a conexão de rede entre a sua aplicação (produtor/consumidor) e o servidor RabbitMQ. Ele garante que conexões inativas ou interrompidas abruptamente sejam fechadas rapidamente. Quando uma aplicação se conecta ao RabbitMQ, elas negociam um tempo limite (timeout) — que é o tempo máximo que podem ficar sem trocar dados.Se nenhuma mensagem for enviada ou recebida durante esse período, o cliente e o servidor enviam pacotes pequenos de dados (os heartbeats) um para o outro.
+  - Se o heartbeat for respondido: A conexão está ativa e saudável.
+  - Se o heartbeat falhar: O RabbitMQ ou a biblioteca cliente entende que a outra ponta caiu (cabo de rede desconectado, travamento, etc.) e descarta a conexão, limpando os recursos.
+  - Por que é importante?
+    - Detecta falhas silenciosas.
+    - Libera recursos no servidor.
+    - Evita bloqueio de rede.
+  - Configuração: O valor padrão sugerido pelo RabbitMQ é de 60 segundos.
+    - Se você definir um tempo muito baixo, poderá sofrer com falsos positivos em redes lentas ou instáveis.
+    - Se você definir um tempo muito alto, o sistema demorará para perceber se um consumidor travou.
+
+![alt text](image-8.png)
+
 ## Modelo de comunicação do protocolo AMQP
 - O modelo de comunicação do AMQP é baseado em mensagens, onde os produtores enviam mensagens para exchanges, que as roteiam para filas, e os consumidores as processam.
 - O protocolo define um conjunto de operações para publicar, consumir e gerenciar mensagens, filas e exchanges, permitindo uma comunicação eficiente e confiável entre sistemas distribuídos.
