@@ -79,7 +79,6 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
   - Headers Exchange: Roteia mensagens com base em cabeçalhos personalizados em vez de chaves de roteamento (ROUTING KEY).
 
 ### Queues
-
 - Fila é uma estrutura de dados que armazena mensagens até que sejam processadas por um consumidor.
 - As filas são criadas dentro de um virtual host. Quando nenhum virtual host é especificado, a fila é criada no virtual host padrão ("/").
 - As filas podem ser configuradas com diferentes propriedades, como durabilidade, exclusividade e auto-delete.
@@ -106,6 +105,18 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
   - Mensagens totais (Total): Soma das mensagens prontas e não confirmadas.
 
 ![alt text](image-4.png)
+![alt text](image-7.png)
+
+*Criando uma fila com argumentos personalizados:*
+```javascript
+channel.assertQueue('my_queue', { // assertQueue é idempotente, ou seja, se a fila já existir com as mesmas configurações/propriedades, ela não será recriada.
+  durable: true, // A fila persistirá mesmo após o broker ser reiniciado (explícito, mas já é o comportamento padrão do RabbitMQ criar a fila como durável).
+  arguments: {
+    'x-message-ttl': 60000, // As mensagens na fila expirarão após 60 segundos
+    'x-dead-letter-exchange': 'dead_letter_exchange' // As mensagens rejeitadas ou expiradas serão enviadas para esta exchange
+  }
+});
+```
 
 ### Bindings
 
