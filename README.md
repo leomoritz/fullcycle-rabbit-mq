@@ -79,6 +79,16 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
   - Topic Exchange: Roteia mensagens para filas com base em padrões de chave de roteamento (ROUTING KEY), permitindo correspondência parcial.
   - Headers Exchange: Roteia mensagens com base em cabeçalhos personalizados em vez de chaves de roteamento (ROUTING KEY).
 - Por padrão, o RabbitMQ possui uma exchange com nome `(AMQP default)` do tipo `direct` que não pode ser deletada.
+  - Nesse caso, quando usamos `channel.sendToQueue(queue, Buffer.from(msg));` ele não publica diretamente na fila, mas na verdade publica na exchange padrão `(AMQP default)` do RabbitMQ usando como router key o próprio nome da fila. Para evidenciar essa explicação, segue trecho de implementação da biblioteca `amqplib` no código abaixo:
+  ```javascript
+  sendToQueue(queue, content, options) {
+    return this.publish('', queue, content, options);
+  }
+
+  publish(exchange, routingKey, content, options) {
+    //...
+  }
+  ```
 - Posso criar minhas próprias exchanges e configurar filas para as mesmas:
   ```typescript
       const exchange = "nfe.direct";
