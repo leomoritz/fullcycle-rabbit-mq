@@ -79,6 +79,13 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
   - Topic Exchange: Roteia mensagens para filas com base em padrões de chave de roteamento (ROUTING KEY), permitindo correspondência parcial.
   - Headers Exchange: Roteia mensagens com base em cabeçalhos personalizados em vez de chaves de roteamento (ROUTING KEY).
 - Por padrão, o RabbitMQ possui uma exchange com nome `(AMQP default)` do tipo `direct` que não pode ser deletada.
+- Posso criar minhas próprias exchanges e configurar filas para as mesmas:
+  ```typescript
+      const exchange = "nfe.direct";
+      await channel.assertExchange(exchange, "direct", { durable: true }); // imutável; pode ser persistente (durable: true) x temporária
+  ```
+  ![alt text](image-17.png)
+  ![alt text](image-18.png)
 
 ### Queues
 - Fila é uma estrutura de dados que armazena mensagens até que sejam processadas por um consumidor.

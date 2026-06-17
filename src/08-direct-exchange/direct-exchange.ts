@@ -10,7 +10,8 @@ async function sendOrderEvents() {
     const connection = await amqp.connect("amqp://admin:admin@localhost:5672");
     const channel = await connection.createChannel();
 
-    const exchange = "amq.direct";
+    const exchange = "nfe.direct";
+    await channel.assertExchange(exchange, "direct", { durable: true }); // imutável; pode ser persistente (durable: true) x temporária
 
     const ordersEvent: OrderEvent[] = [
         { id: 101, customer: "Alice", event: "order.created" },
