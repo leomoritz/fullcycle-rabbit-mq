@@ -72,11 +72,13 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
 ### Exchanges
 
 - São os pontos de entrada para todas as mensagens no RabbitMQ. Eles determinam para quais filas as mensagens serão encaminhadas.
+- A vantagem de existir uma `exchange` entre o `producer` e a `queue` é o fato de o `producer` não precisar ficar conhecendo uma fila nova toda vez que ela surge no contexto. Deste modo, o `producer` só se preocupa em garantir que a mensagem seja publicada no `exchange`.
 - Tipos de exchanges:
   - Direct Exchange: Roteia mensagens para filas com base em uma chave de roteamento exata (ROUTING KEY).
   - Fanout Exchange: Roteia mensagens para todas as filas vinculadas, ignorando a chave de roteamento (ROUTING KEY).
   - Topic Exchange: Roteia mensagens para filas com base em padrões de chave de roteamento (ROUTING KEY), permitindo correspondência parcial.
   - Headers Exchange: Roteia mensagens com base em cabeçalhos personalizados em vez de chaves de roteamento (ROUTING KEY).
+- Por padrão, o RabbitMQ possui uma exchange com nome `(AMQP default)` do tipo `direct` que não pode ser deletada.
 
 ### Queues
 - Fila é uma estrutura de dados que armazena mensagens até que sejam processadas por um consumidor.
