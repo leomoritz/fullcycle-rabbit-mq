@@ -81,6 +81,12 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
     - Diferença entre `#`e `*`: O `#` corresponde a zero ou mais palavras, enquanto `*` corresponde a exatamente uma palavra. Por exemplo, `order.#` corresponderia a `order.created`, `order.updated.status`, etc., enquanto `order.*` corresponderia apenas a `order.created` ou `order.updated`, mas não a `order.updated.status`.
     - <a href='src/10-topic-exchange/README.md'>Exemplo prático</a>
   - Headers Exchange: Roteia mensagens com base em cabeçalhos personalizados em vez de chaves de roteamento (ROUTING KEY).
+    - Semelhante ao Topic Exchange, a diferença é que ele permite roteamento complexo usando múltiplos critérios de correspondência com base nos cabeçalhos da mensagem.
+    - Permite correspondência com os seguintes operadores:
+      - `'x-match': 'all'`: A mensagem deve corresponder a todos os cabeçalhos especificados para ser roteada para a fila.
+      - `'x-match': 'any'`: A mensagem deve corresponder a pelo menos um dos cabeçalhos especificados para ser roteada para a fila.
+      - `'x-match': 'all-with-x'`: A mensagem deve corresponder a todos os cabeçalhos especificados, mas pode conter outros cabeçalhos adicionais/customizados para ser roteada para a fila.
+      - `'x-match': 'any-with-x'`: A mensagem deve corresponder a pelo menos um dos cabeçalhos especificados, mas pode conter outros cabeçalhos adicionais/customizados para ser roteada para a fila.
 - Por padrão, o RabbitMQ possui uma exchange com nome `(AMQP default)` do tipo `direct` que não pode ser deletada.
   - Nesse caso, quando usamos `channel.sendToQueue(queue, Buffer.from(msg));` ele não publica diretamente na fila, mas na verdade publica na exchange padrão `(AMQP default)` do RabbitMQ usando como router key o próprio nome da fila. Para evidenciar essa explicação, segue trecho de implementação da biblioteca `amqplib` no código abaixo:
   ```javascript
