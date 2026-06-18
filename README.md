@@ -75,8 +75,11 @@ Esta arquitetura permite total desacoplamento entre produtores e consumidores, f
 - A vantagem de existir uma `exchange` entre o `producer` e a `queue` é o fato de o `producer` não precisar ficar conhecendo uma fila nova toda vez que ela surge no contexto. Deste modo, o `producer` só se preocupa em garantir que a mensagem seja publicada no `exchange`.
 - Tipos de exchanges:
   - Direct Exchange: Roteia mensagens para filas com base em uma chave de roteamento exata (ROUTING KEY).
-  - Fanout Exchange: Roteia mensagens para todas as filas vinculadas, ignorando a chave de roteamento (ROUTING KEY).
+  - Fanout Exchange: Roteia mensagens para todas as filas vinculadas (broadcasting), ignorando a chave de roteamento (ROUTING KEY).
   - Topic Exchange: Roteia mensagens para filas com base em padrões de chave de roteamento (ROUTING KEY), permitindo correspondência parcial.
+    - Flexível, permitindo binding dinâmicas utilizando expressão regular, por exemplo `order.#` significa que toda routing key que começar `order.` será direcionado para a fila que possuir essa binding configurada.
+    - Diferença entre `#`e `*`: O `#` corresponde a zero ou mais palavras, enquanto `*` corresponde a exatamente uma palavra. Por exemplo, `order.#` corresponderia a `order.created`, `order.updated.status`, etc., enquanto `order.*` corresponderia apenas a `order.created` ou `order.updated`, mas não a `order.updated.status`.
+    - <a href='src/10-topic-exchange/README.md'>Exemplo prático</a>
   - Headers Exchange: Roteia mensagens com base em cabeçalhos personalizados em vez de chaves de roteamento (ROUTING KEY).
 - Por padrão, o RabbitMQ possui uma exchange com nome `(AMQP default)` do tipo `direct` que não pode ser deletada.
   - Nesse caso, quando usamos `channel.sendToQueue(queue, Buffer.from(msg));` ele não publica diretamente na fila, mas na verdade publica na exchange padrão `(AMQP default)` do RabbitMQ usando como router key o próprio nome da fila. Para evidenciar essa explicação, segue trecho de implementação da biblioteca `amqplib` no código abaixo:
