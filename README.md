@@ -192,6 +192,21 @@ channel.assertQueue('my_queue', { // assertQueue é idempotente, ou seja, se a f
 
 ![alt text](image-8.png)
 
+### Consumer Automatic Acknowledgement
+- O RabbitMQ oferece a opção de configurar o consumo de mensagens com ou sem confirmação (acknowledgement).
+- Quando configurado para consumo sem confirmação (`noAck: true`), o RabbitMQ considera que a mensagem foi processada assim que for entregue ao consumidor, o que pode levar a mensagens perdidas se o consumidor falhar antes de processar a mensagem.
+- Vantagens do consumo sem confirmação:
+  - Maior desempenho, pois não há necessidade de esperar por confirmações.
+  - Throughput/processamento mais rápido.
+  - Fire and forget.
+- Desvantagens do consumo sem confirmação:
+  - Risco de perda de mensagens em caso de falhas do consumidor.
+  - Sem backpressure, o que pode levar a sobrecarga do consumidor.
+  - Sem retry/tolerância a falhas, pois mensagens não processadas não serão reentregues.
+- Casos de Uso:
+  - Logs e métricas, onde a perda de algumas mensagens não é crítica (cpu, memória, etc).
+  - Processamento de dados em tempo real, onde a velocidade é mais importante que a confiabilidade (Ex: geoprocessamenhto do uber).
+  - Cenários onde o consumidor é altamente confiável e falhas são raras.
 ## Padrão Pub/Sub
 - O padrão garante que todos que se inscreveram vão receber a mensagem.
 - O RabbitMQ permite o uso deste padrão através da configuração das filas com o recurso de binding (roteamento).
