@@ -335,6 +335,19 @@ https://tryrabbitmq.com/
 - É responsabilidade do sistema de informar um ID único para cada mensagem publicada.
 - O broker confirma o recebimento da mensagem através dos métodos do consumer acknowledgements.
 
+### Dead Letter Exchange (DLX)
+- É uma exchange especial para onde as mensagens rejeitadas ou expiradas são enviadas.
+- Permite que as mensagens que não puderam ser processadas sejam tratadas de forma separada, evitando perda de dados e permitindo análise posterior.
+- As mensagens podem ser rejeitadas ou expiradas por diversos motivos, como falha no processamento, tempo de vida expirado (TTL)
+- As mensagens enviadas para a DLX podem ser redirecionadas para uma fila específica, permitindo que sejam processadas posteriormente ou analisadas para identificar problemas no sistema.
+- A DLX pode ser configurada com diferentes políticas de roteamento, permitindo que as mensagens sejam encaminhadas para filas específicas com base em critérios como tipo de mensagem, prioridade ou origem.
+- A DLX é útil para implementar estratégias de retry, onde as mensagens que falharam no processamento podem ser reprocessadas após um determinado tempo ou número de tentativas, aumentando a resiliência do sistema.
+- Exemplo teórico: 
+  - Uma mensagem é enviada para uma fila com TTL de 30 segundos.
+  - Se a mensagem não for processada dentro desse tempo, ela é enviada para a DLX.
+  - A DLX redireciona a mensagem para uma fila de retry, onde ela será reprocessada após um tempo determinado (ex: 1 minuto).
+  - Se a mensagem falhar novamente, ela pode ser enviada para outra DLX ou descartada, dependendo da política de roteamento configurada.
+
 ## Escalabilidade (Nodes)
 
 - Como escalar o RabbitMQ para lidar com um volume maior de mensagens?
