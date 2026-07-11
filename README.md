@@ -207,6 +207,19 @@ channel.assertQueue('my_queue', { // assertQueue é idempotente, ou seja, se a f
   - Logs e métricas, onde a perda de algumas mensagens não é crítica (cpu, memória, etc).
   - Processamento de dados em tempo real, onde a velocidade é mais importante que a confiabilidade (Ex: geoprocessamenhto do uber).
   - Cenários onde o consumidor é altamente confiável e falhas são raras.
+
+### Consumer Manual Acknowledgement
+- O RabbitMQ oferece a opção de configurar o consumo de mensagens com confirmação manual (`noAck: false`), onde o consumidor deve enviar uma confirmação (ack) para o broker após processar a mensagem.
+- Vantagens do consumo com confirmação manual:
+  - Garantia de entrega: As mensagens não são removidas da fila até que o consumidor confirme que foram processadas com sucesso.
+  - Resiliência: Se o consumidor falhar antes de enviar a confirmação, a mensagem será reentregue a outro consumidor.
+  - Controle de fluxo: Permite que o consumidor processe mensagens no seu próprio ritmo, evitando sobrecarga.
+- Desvantagens do consumo com confirmação manual:
+  - Maior complexidade na implementação, pois o desenvolvedor precisa gerenciar o envio de confirmações.
+  - Potencial redução de desempenho, pois o consumidor precisa esperar para enviar confirmações.
+  - Acumulo de mensagens rejeitadas ou não confirmadas, o que pode levar a aumento de memória e latência.
+- Exemplo de implementação na prática: <a href="src/12-consumer-manual-ack/consumer.ts">consumer.ts</a>
+
 ## Padrão Pub/Sub
 - O padrão garante que todos que se inscreveram vão receber a mensagem.
 - O RabbitMQ permite o uso deste padrão através da configuração das filas com o recurso de binding (roteamento).
