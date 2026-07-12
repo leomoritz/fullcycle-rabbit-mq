@@ -358,6 +358,21 @@ https://tryrabbitmq.com/
 - Dead Letter Fail Queue: 
   - Fila onde as mensagens que falharam no processamento são enviadas após um número determinado de tentativas.
   - Permite que as mensagens sejam analisadas posteriormente para identificar problemas no sistema ou descartadas, dependendo da política de roteamento configurada.
+- Argumentos vs Policies: 
+  - Argumentos: Configurações específicas para filas e mensagens, como TTL, DLX, etc.
+  - Policies: Conjunto de regras aplicadas a várias filas e exchanges, permitindo configurar comportamentos padrão para múltiplas filas ou exchanges de forma centralizada. Alguns argumentos podem ser configurados através de policies, mas nem todos. Por exemplo, TTL e DLX podem ser configurados tanto como argumentos quanto como policies, enquanto outros argumentos específicos podem não ter suporte em policies (verificar documentação oficial do RabbitMQ).
+    - Exemplo de configuração de policy para TTL e DLX (dentro do container do RabbitMQ):
+    ```bash
+    rabbitmqctl set_policy my_policy ".*" '{"message-ttl":60000,"dead-letter-exchange":"my_dlx"}' --apply-to queues
+    ```
+    - Outro exemplo de configuração de policy para DLX (dentro do container do RabbitMQ):
+    ```bash
+    rabbitmqctl set_policy nfe.queue_dlx "nfe.queue" '{"dead-letter-exchange":"dlx.exchange"}' --apply-to queues --priority 7
+    ```
+    - Vantagens de usar policies:
+      - Centralização: Permite gerenciar configurações de múltiplas filas e exchanges de forma centralizada.
+      - Consistência: Garante que todas as filas e exchanges aplicadas à policy sigam as mesmas regras, evitando inconsistências na configuração.
+      - Facilidade de manutenção: Simplifica a manutenção e atualização das configurações, permitindo alterações em uma única policy que afetam todas as filas e exchanges associadas.
 
 ## Escalabilidade (Nodes)
 
