@@ -16,6 +16,7 @@ async function consumerWithAcks() {
     //deadLetterRoutingKey: "xpto", // define a routing key específica para a dead letter exchange, caso contrário, usará a mesma routing key da mensagem original
   });
   await channel.bindQueue(queue, exchange, "order"); // associa a fila à exchange com a routing key "order"
+  await channel.assertQueue("fail.queue"); // cria a fila de falha caso não exista
 
   await channel.assertExchange(dlxExchange, typeExchange); // cria a exchange de dead letter caso não exista
   await channel.assertQueue(dlxQueue); // cria a fila de dead letter caso não exista
@@ -31,7 +32,12 @@ async function consumerWithAcks() {
         const content = msg?.content.toString();
         if (!msg || !content) {
           console.log("[!] Received empty message, ignoring...");
-          msg && channel.reject(msg, false); // dispara o dead letter
+          //msg && channel.reject(msg, false); // dispara o dead letter
+          if (msg) {
+            const newMsg = Buffer.from(JSON.stringify({ error: "Empty message received", payload: "" }));
+            channel.sendToQueue("fail.queue", newMsg); // aplica política de retry, enviando a mensagem para uma fila de falha
+            channel.ack(msg, true); // confirma a mensagem para que não seja reprocessada ou enviada para a dead letter exchange
+          }
           return;
         }
 
@@ -46,6 +52,7 @@ async function consumerWithAcks() {
           console.log("[x] Done processing");
           channel.ack(msg, true);
         } catch (error) {
+          // se acontecer um erro não reprocessvel, publicar na fila de dead letter rejeitando ou negando a mensagem original
           //@ts-expect-error
           console.error("[!] Processing error:", error.message);
           
