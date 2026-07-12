@@ -347,6 +347,17 @@ https://tryrabbitmq.com/
   - Se a mensagem não for processada dentro desse tempo, ela é enviada para a DLX.
   - A DLX redireciona a mensagem para uma fila de retry, onde ela será reprocessada após um tempo determinado (ex: 1 minuto).
   - Se a mensagem falhar novamente, ela pode ser enviada para outra DLX ou descartada, dependendo da política de roteamento configurada.
+- Expiration (TTL - Time To Live): 
+  - Define o tempo de vida da mensagem na fila.
+  - Se a mensagem não for processada dentro desse tempo, ela é enviada para a DLX.
+  - Pode ser configurado tanto na fila quanto na mensagem individualmente.
+- Dead Letter Retry Queue: 
+  - Estratégia para reprocessar mensagens que falharam no processamento.
+  - Pode ser implementada utilizando a DLX, onde as mensagens são redirecionadas para uma fila de retry após falharem no processamento.
+  - A fila de retry pode ter um TTL configurado, permitindo que as mensagens sejam reprocessadas após um determinado tempo.
+- Dead Letter Fail Queue: 
+  - Fila onde as mensagens que falharam no processamento são enviadas após um número determinado de tentativas.
+  - Permite que as mensagens sejam analisadas posteriormente para identificar problemas no sistema ou descartadas, dependendo da política de roteamento configurada.
 
 ## Escalabilidade (Nodes)
 

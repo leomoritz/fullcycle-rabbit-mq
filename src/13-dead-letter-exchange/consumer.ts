@@ -38,7 +38,7 @@ async function consumerWithAcks() {
           //msg && channel.reject(msg, false); // dispara o dead letter
           if (msg) {
             const newMsg = Buffer.from(JSON.stringify({ error: "Empty message received", payload: "" }));
-            channel.sendToQueue("fail.queue", newMsg); // aplica política de retry, enviando a mensagem para uma fila de falha
+            channel.sendToQueue("fail.queue", newMsg); // enviando a mensagem para uma fila de falha
             channel.ack(msg, true); // confirma a mensagem para que não seja reprocessada ou enviada para a dead letter exchange
           }
           return;
@@ -55,11 +55,24 @@ async function consumerWithAcks() {
           console.log("[x] Done processing");
           channel.ack(msg, true);
         } catch (error) {
-          // se acontecer um erro não reprocessvel, publicar na fila de dead letter rejeitando ou negando a mensagem original
+          // se acontecer um erro não reprocessvel, publicar na fila de falha
+
+          const maxRetries = 3;
+          const xDeath = msg.properties.headers?.["x-death"] || [];
+          const retryCount = xDeath[0]?.count || 0;
+          
+          if (retryCount < maxRetries) {
+            channel.nack(msg, false, true); //channel.reject(msg, true);
+          } else {
+            //@ts-expect-error
+            const newMsg = Buffer.from(JSON.stringify({ error: error.message, payload: content }));
+            channel.sendToQueue("fail.queue", newMsg); // enviando a mensagem para uma fila de falha
+            channel.ack(msg, true); // confirma a mensagem para que não seja reprocessada ou enviada para a dead letter exchange
+          }
+
           //@ts-expect-error
           console.error("[!] Processing error:", error.message);
           
-          channel.nack(msg, false, true); //channel.reject(msg, true);
 
         }
       //}, 10000);
