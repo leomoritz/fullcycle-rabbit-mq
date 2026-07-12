@@ -6,7 +6,7 @@ async function consumerWithAcks() {
 
   const exchange = "amq.direct";
   const queue = "nfe.queue";
-  const dlxQueue = "dlx.queue";
+  const dlxQueue = "dlx.retry.queue";
   const dlxExchange = "dlx.exchange";
   const typeExchange = "direct";
 
@@ -19,7 +19,10 @@ async function consumerWithAcks() {
   await channel.assertQueue("fail.queue"); // cria a fila de falha caso não exista
 
   await channel.assertExchange(dlxExchange, typeExchange); // cria a exchange de dead letter caso não exista
-  await channel.assertQueue(dlxQueue); // cria a fila de dead letter caso não exista
+  await channel.assertQueue(dlxQueue, {
+    "messageTtl": 5000, // define o tempo de vida da mensagem na fila de dead letter (5 segundos)
+    deadLetterExchange: exchange, // define a exchange para onde as mensagens expiradas serão enviadas para reprocessamento
+  }); // cria a fila de dead letter caso não exista
   await channel.bindQueue(dlxQueue, dlxExchange, "order"); // associa a fila de dead letter à exchange de dead letter com a routing key "order"
 
   console.log(`[*] Waiting for messages in ${queue}. To exit press CTRL+C`);
